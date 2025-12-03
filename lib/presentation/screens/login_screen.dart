@@ -26,7 +26,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _onLoginPressed(BuildContext context) async {
     final vm = context.read<AuthViewModel>();
-    await vm.signIn(_emailCtrl.text.trim(), _passwordCtrl.text);
+
+    await vm.signIn(
+      _emailCtrl.text.trim(),
+      _passwordCtrl.text,
+    );
 
     if (!mounted) return;
 
