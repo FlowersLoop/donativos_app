@@ -2,10 +2,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../data/repositories/auth_repository_impl.dart';
+// DATA (les damos alias para evitar conflictos)
+import '../data/repositories/auth_repository_impl.dart' as auth_data;
+import '../data/repositories/donation_repository_impl.dart' as donation_data;
+
+// DOMAIN
 import '../domain/repositories/auth_repository.dart';
+import '../domain/repositories/donation_repository.dart';
 import '../domain/usecases/sign_in_usecase.dart';
+import '../domain/usecases/create_donation_usecase.dart';
+
+// VIEWMODELS
 import '../presentation/viewmodels/auth_viewmodel.dart';
+import '../presentation/viewmodels/donation_form_viewmodel.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -16,22 +25,33 @@ class AppProviders extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Repositorios concretos
+        // -------- AUTH ----------
         Provider<AuthRepository>(
-          create: (_) => AuthRepositoryImpl(),
+          create: (_) => auth_data.AuthRepositoryImpl(),
         ),
-
-        // Casos de uso
         ProxyProvider<AuthRepository, SignInUseCase>(
           update: (_, authRepo, __) =>
               SignInUseCase(authRepository: authRepo),
         ),
-
-        // ViewModels
         ChangeNotifierProvider<AuthViewModel>(
           create: (context) => AuthViewModel(
             signInUseCase:
             Provider.of<SignInUseCase>(context, listen: false),
+          ),
+        ),
+
+        // -------- DONATIONS ----------
+        Provider<DonationRepository>(
+          create: (_) => donation_data.DonationRepositoryImpl(),
+        ),
+        ProxyProvider<DonationRepository, CreateDonationUseCase>(
+          update: (_, donationRepo, __) =>
+              CreateDonationUseCase(donationRepository: donationRepo),
+        ),
+        ChangeNotifierProvider<DonationFormViewModel>(
+          create: (context) => DonationFormViewModel(
+            createDonationUseCase:
+            Provider.of<CreateDonationUseCase>(context, listen: false),
           ),
         ),
       ],

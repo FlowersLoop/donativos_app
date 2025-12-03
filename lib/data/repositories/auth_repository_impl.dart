@@ -33,7 +33,6 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     try {
-      // Timeout para evitar spinner infinito
       final cred = await _firebaseAuth
           .signInWithEmailAndPassword(
         email: email,
@@ -61,7 +60,7 @@ class AuthRepositoryImpl implements AuthRepository {
         print(
             '[AuthRepositoryImpl] FirebaseAuthException: ${e.code} - ${e.message}');
       }
-      rethrow; // Lo tratamos en el ViewModel
+      rethrow;
     } catch (e) {
       if (kDebugMode) {
         print('[AuthRepositoryImpl] ERROR genérico: $e');

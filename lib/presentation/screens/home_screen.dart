@@ -94,8 +94,9 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
-                onPressed: () =>
-                    _showComingSoon(context, 'Registro manual de donativo'),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/donation-form');
+                },
                 icon: const Icon(Icons.add),
                 label: const Text('Registrar donativo manual'),
               ),
