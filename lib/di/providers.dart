@@ -19,6 +19,7 @@ import '../presentation/viewmodels/donation_form_viewmodel.dart';
 import '../presentation/viewmodels/donations_overview_viewmodel.dart';
 import '../domain/usecases/get_user_donations_usecase.dart';
 import '../presentation/viewmodels/user_donations_viewmodel.dart';
+import '../presentation/viewmodels/qr_donation_viewmodel.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -59,6 +60,12 @@ class AppProviders extends StatelessWidget {
         ProxyProvider<DonationRepository, GetUserDonationsUseCase>(
           update: (_, donationRepo, __) =>
               GetUserDonationsUseCase(donationRepository: donationRepo),
+        ),
+        ChangeNotifierProvider<QrDonationViewModel>(
+          create: (context) => QrDonationViewModel(
+            createDonationUseCase:
+            Provider.of<CreateDonationUseCase>(context, listen: false),
+          ),
         ),
         ChangeNotifierProvider<DonationFormViewModel>(
           create: (context) => DonationFormViewModel(
