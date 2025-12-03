@@ -75,16 +75,18 @@ class DonationRepositoryImpl implements DonationRepository {
   @override
   Future<List<Donation>> getDonationsByUser(String userId) async {
     try {
+      // Solo filtro por usuario en Firestore
       final query = await _collection
           .where('createdByUserId', isEqualTo: userId)
-          .orderBy('createdAt', descending: true)
-          .limit(50)
           .get();
 
       final list = query.docs.map((doc) {
         final data = doc.data();
         return DonationModel.fromMap(data, doc.id);
       }).toList();
+
+      // Ordeno en memoria por fecha descendente
+      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       if (kDebugMode) {
         print(
