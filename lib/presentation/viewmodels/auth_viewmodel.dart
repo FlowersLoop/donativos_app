@@ -26,6 +26,13 @@ class AuthViewModel extends ChangeNotifier {
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
+  Future<void> signOut() async {
+    await signInUseCase.authRepository.signOut();
+    _user = null;
+    _status = AuthStatus.idle;
+    notifyListeners();
+  }
+
   Future<void> signIn(String email, String password) async {
     _status = AuthStatus.loading;
     _errorMessage = null;

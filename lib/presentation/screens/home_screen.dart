@@ -2,29 +2,45 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/routes/app_routes.dart';
 import '../viewmodels/auth_viewmodel.dart';
+import '../viewmodels/donations_overview_viewmodel.dart';
 import '../widgets/dashboard_stat_card.dart';
-import '../widgets/primary_button.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature estará disponible en las próximas versiones.'),
-      ),
-    );
+  Future<void> _logout(BuildContext context) async {
+    final authVm = context.read<AuthViewModel>();
+    await authVm.signOut();
+
+    if (!context.mounted) return;
+    Navigator.pushReplacementNamed(context, AppRoutes.login);
+  }
+
+  Future<void> _openDonationForm(BuildContext context) async {
+    // Abrir formulario
+    await Navigator.pushNamed(context, AppRoutes.donationForm);
+
+    // Al regresar, recargamos la lista
+    if (!context.mounted) return;
+    context.read<DonationsOverviewViewModel>().loadDonations();
   }
 
   @override
   Widget build(BuildContext context) {
     final authVm = context.watch<AuthViewModel>();
-    final userName = authVm.user?.name ?? 'Voluntario';
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Panel de voluntario'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar sesión',
+            onPressed: () => _logout(context),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -32,12 +48,10 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Saludo
+              // -------- Encabezado --------
               Text(
-                'Hola, $userName',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                'Hola, ${authVm.user?.name ?? 'voluntario'}',
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 4),
               Text(
@@ -47,90 +61,137 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // Sección: resumen rápido
+              // -------- Dashboard rápido --------
+              Consumer<DonationsOverviewViewModel>(
+                builder: (context, vm, _) {
+                  final total = vm.donations.length;
+
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: DashboardStatCard(
+                          title: 'Donativos\nregistrados',
+                          value: '$total',
+                          icon: Icons.inventory_2_outlined,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: DashboardStatCard(
+                          title: 'Hoy',
+                          value: vm.donations
+                              .where((d) =>
+                          DateTime.now()
+                              .difference(d.createdAt)
+                              .inDays ==
+                              0)
+                              .length
+                              .toString(),
+                          icon: Icons.today_outlined,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              // -------- Acciones rápidas --------
               Text(
-                'Resumen de hoy',
+                'Acciones rápidas',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
-
-              Column(
-                children: const [
-                  DashboardStatCard(
-                    icon: Icons.inventory_2_outlined,
-                    title: 'Donativos registrados',
-                    value: '24',
-                    subtitle: 'En las últimas 24 horas',
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () => _openDonationForm(context),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Registrar donativo manual'),
                   ),
-                  SizedBox(height: 12),
-                  DashboardStatCard(
-                    icon: Icons.local_shipping_outlined,
-                    title: 'Entregas pendientes',
-                    value: '7',
-                    subtitle: 'Rutas asignadas hoy',
-                  ),
-                  SizedBox(height: 12),
-                  DashboardStatCard(
-                    icon: Icons.people_outline,
-                    title: 'Comunidades atendidas',
-                    value: '5',
-                    subtitle: 'En esta jornada',
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // futuro: lector de QR, tracking de entregas, etc.
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Funcionalidad de QR en desarrollo para la siguiente fase.',
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.qr_code_scanner),
+                    label: const Text('Registrar por QR'),
                   ),
                 ],
               ),
 
               const SizedBox(height: 24),
 
-              // Sección: acciones rápidas
+              // -------- Lista de últimos donativos --------
               Text(
-                'Acciones rápidas',
+                'Últimos donativos registrados',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
-              PrimaryButton(
-                text: 'Escanear QR de donativo',
-                onPressed: () => _showComingSoon(context, 'Escanear QR'),
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/donation-form');
+              Consumer<DonationsOverviewViewModel>(
+                builder: (context, vm, _) {
+                  if (vm.status == DonationsOverviewStatus.loading &&
+                      vm.donations.isEmpty) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+
+                  if (vm.status == DonationsOverviewStatus.error) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(
+                        vm.errorMessage ?? 'Error al cargar donativos.',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (vm.donations.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text('Aún no hay donativos registrados.'),
+                    );
+                  }
+
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: vm.donations.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final d = vm.donations[index];
+                      return ListTile(
+                        leading: const Icon(Icons.inventory_2_outlined),
+                        title: Text(d.description),
+                        subtitle: Text(
+                          '${d.quantity} ${d.unit} • ${d.category}\n${d.location}',
+                        ),
+                        isThreeLine: true,
+                        dense: true,
+                      );
+                    },
+                  );
                 },
-                icon: const Icon(Icons.add),
-                label: const Text('Registrar donativo manual'),
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: () =>
-                    _showComingSoon(context, 'Inventario de almacén'),
-                icon: const Icon(Icons.list_alt_outlined),
-                label: const Text('Ver inventario'),
               ),
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: 0,
-        onDestinationSelected: (index) {
-          // Más adelante aquí navegamos a otras secciones
-          _showComingSoon(context, 'Navegación');
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            label: 'Inicio',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.qr_code_scanner_outlined),
-            label: 'Escanear',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            label: 'Perfil',
-          ),
-        ],
       ),
     );
   }

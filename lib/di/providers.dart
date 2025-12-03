@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// DATA (les damos alias para evitar conflictos)
+// DATA
 import '../data/repositories/auth_repository_impl.dart' as auth_data;
 import '../data/repositories/donation_repository_impl.dart' as donation_data;
 
@@ -11,10 +11,12 @@ import '../domain/repositories/auth_repository.dart';
 import '../domain/repositories/donation_repository.dart';
 import '../domain/usecases/sign_in_usecase.dart';
 import '../domain/usecases/create_donation_usecase.dart';
+import '../domain/usecases/get_recent_donations_usecase.dart';
 
 // VIEWMODELS
 import '../presentation/viewmodels/auth_viewmodel.dart';
 import '../presentation/viewmodels/donation_form_viewmodel.dart';
+import '../presentation/viewmodels/donations_overview_viewmodel.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -48,11 +50,21 @@ class AppProviders extends StatelessWidget {
           update: (_, donationRepo, __) =>
               CreateDonationUseCase(donationRepository: donationRepo),
         ),
+        ProxyProvider<DonationRepository, GetRecentDonationsUseCase>(
+          update: (_, donationRepo, __) =>
+              GetRecentDonationsUseCase(donationRepository: donationRepo),
+        ),
         ChangeNotifierProvider<DonationFormViewModel>(
           create: (context) => DonationFormViewModel(
             createDonationUseCase:
             Provider.of<CreateDonationUseCase>(context, listen: false),
           ),
+        ),
+        ChangeNotifierProvider<DonationsOverviewViewModel>(
+          create: (context) => DonationsOverviewViewModel(
+            getRecentDonationsUseCase:
+            Provider.of<GetRecentDonationsUseCase>(context, listen: false),
+          )..loadDonations(), // carga al iniciar app
         ),
       ],
       child: child,
