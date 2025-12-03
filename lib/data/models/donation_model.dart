@@ -12,10 +12,11 @@ class DonationModel extends Donation {
     required super.category,
     required super.location,
     required super.createdAt,
+    required super.createdByUserId,
+    required super.createdByEmail,
   });
 
   factory DonationModel.fromMap(Map<String, dynamic> map, String id) {
-    // createdAt puede venir como Timestamp o como String
     final createdAtField = map['createdAt'];
     DateTime createdAt;
 
@@ -35,6 +36,8 @@ class DonationModel extends Donation {
       category: map['category'] as String? ?? '',
       location: map['location'] as String? ?? '',
       createdAt: createdAt,
+      createdByUserId: map['createdByUserId'] as String? ?? '',
+      createdByEmail: map['createdByEmail'] as String? ?? '',
     );
   }
 
@@ -44,7 +47,8 @@ class DonationModel extends Donation {
     'unit': unit,
     'category': category,
     'location': location,
-    // Firestore lo va a guardar como Timestamp
     'createdAt': createdAt,
+    'createdByUserId': createdByUserId,
+    'createdByEmail': createdByEmail,
   };
 }

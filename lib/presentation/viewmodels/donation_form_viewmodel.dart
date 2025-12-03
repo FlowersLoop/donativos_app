@@ -30,6 +30,8 @@ class DonationFormViewModel extends ChangeNotifier {
     required String unit,
     required String category,
     required String location,
+    required String createdByUserId,
+    required String createdByEmail,
   }) async {
     _status = DonationFormStatus.submitting;
     _errorMessage = null;
@@ -44,6 +46,8 @@ class DonationFormViewModel extends ChangeNotifier {
         category: category,
         location: location,
         createdAt: DateTime.now(),
+        createdByUserId: createdByUserId,
+        createdByEmail: createdByEmail,
       );
 
       await createDonationUseCase(donation);
@@ -51,8 +55,7 @@ class DonationFormViewModel extends ChangeNotifier {
       _status = DonationFormStatus.success;
     } catch (e) {
       _status = DonationFormStatus.error;
-      _errorMessage =
-      'No se pudo registrar el donativo. Intenta de nuevo.';
+      _errorMessage = 'No se pudo registrar el donativo. Intenta de nuevo.';
       if (kDebugMode) {
         print('[DonationFormViewModel] Error: $e');
       }

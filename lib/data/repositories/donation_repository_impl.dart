@@ -28,13 +28,15 @@ class DonationRepositoryImpl implements DonationRepository {
         category: donation.category,
         location: donation.location,
         createdAt: donation.createdAt,
+        createdByUserId: donation.createdByUserId,
+        createdByEmail: donation.createdByEmail,
       );
 
       await _collection.doc(donation.id).set(model.toMap());
 
       if (kDebugMode) {
         print('[DonationRepositoryImpl] Donativo guardado en Firestore: '
-            '${donation.description}');
+            '${donation.description} por ${donation.createdByEmail}');
       }
     } catch (e) {
       if (kDebugMode) {

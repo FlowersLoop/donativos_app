@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodels/donation_form_viewmodel.dart';
+import '../viewmodels/auth_viewmodel.dart';
 import '../widgets/primary_button.dart';
 
 class DonationFormScreen extends StatefulWidget {
@@ -30,7 +31,18 @@ class _DonationFormScreenState extends State<DonationFormScreen> {
   }
 
   Future<void> _onSubmit(BuildContext context) async {
-    final vm = context.read<DonationFormViewModel>();
+    final formVm = context.read<DonationFormViewModel>();
+    final authVm = context.read<AuthViewModel>();
+
+    final user = authVm.user;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay usuario autenticado. Vuelve a iniciar sesión.'),
+        ),
+      );
+      return;
+    }
 
     final desc = _descriptionCtrl.text.trim();
     final qtyStr = _quantityCtrl.text.trim();
@@ -56,28 +68,30 @@ class _DonationFormScreenState extends State<DonationFormScreen> {
       return;
     }
 
-    await vm.submitDonation(
+    await formVm.submitDonation(
       description: desc,
       quantity: qty,
       unit: unit,
       category: _selectedCategory,
       location: location,
+      createdByUserId: user.id,
+      createdByEmail: user.email,
     );
 
     if (!mounted) return;
 
-    if (vm.status == DonationFormStatus.success) {
+    if (formVm.status == DonationFormStatus.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Donativo registrado correctamente.'),
         ),
       );
       Navigator.pop(context); // Regresar al Home
-    } else if (vm.status == DonationFormStatus.error &&
-        vm.errorMessage != null) {
+    } else if (formVm.status == DonationFormStatus.error &&
+        formVm.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(vm.errorMessage!),
+          content: Text(formVm.errorMessage!),
         ),
       );
     }
@@ -134,7 +148,7 @@ class _DonationFormScreenState extends State<DonationFormScreen> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                initialValue: _selectedCategory,
+                value: _selectedCategory,
                 decoration: const InputDecoration(
                   labelText: 'Categoría',
                   border: OutlineInputBorder(),
