@@ -17,6 +17,8 @@ import '../domain/usecases/get_recent_donations_usecase.dart';
 import '../presentation/viewmodels/auth_viewmodel.dart';
 import '../presentation/viewmodels/donation_form_viewmodel.dart';
 import '../presentation/viewmodels/donations_overview_viewmodel.dart';
+import '../domain/usecases/get_user_donations_usecase.dart';
+import '../presentation/viewmodels/user_donations_viewmodel.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -54,6 +56,10 @@ class AppProviders extends StatelessWidget {
           update: (_, donationRepo, __) =>
               GetRecentDonationsUseCase(donationRepository: donationRepo),
         ),
+        ProxyProvider<DonationRepository, GetUserDonationsUseCase>(
+          update: (_, donationRepo, __) =>
+              GetUserDonationsUseCase(donationRepository: donationRepo),
+        ),
         ChangeNotifierProvider<DonationFormViewModel>(
           create: (context) => DonationFormViewModel(
             createDonationUseCase:
@@ -64,7 +70,13 @@ class AppProviders extends StatelessWidget {
           create: (context) => DonationsOverviewViewModel(
             getRecentDonationsUseCase:
             Provider.of<GetRecentDonationsUseCase>(context, listen: false),
-          )..loadDonations(), // carga al iniciar app
+          )..loadDonations(),
+        ),
+        ChangeNotifierProvider<UserDonationsViewModel>(
+          create: (context) => UserDonationsViewModel(
+            getUserDonationsUseCase:
+            Provider.of<GetUserDonationsUseCase>(context, listen: false),
+          ),
         ),
       ],
       child: child,

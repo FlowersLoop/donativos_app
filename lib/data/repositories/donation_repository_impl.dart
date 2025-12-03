@@ -71,4 +71,32 @@ class DonationRepositoryImpl implements DonationRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<List<Donation>> getDonationsByUser(String userId) async {
+    try {
+      final query = await _collection
+          .where('createdByUserId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+
+      final list = query.docs.map((doc) {
+        final data = doc.data();
+        return DonationModel.fromMap(data, doc.id);
+      }).toList();
+
+      if (kDebugMode) {
+        print(
+            '[DonationRepositoryImpl] Donativos del usuario $userId: ${list.length}');
+      }
+
+      return list;
+    } catch (e) {
+      if (kDebugMode) {
+        print('[DonationRepositoryImpl] ERROR getDonationsByUser: $e');
+      }
+      rethrow;
+    }
+  }
 }
