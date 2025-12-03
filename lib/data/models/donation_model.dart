@@ -1,4 +1,6 @@
 // file: lib/data/models/donation_model.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../domain/entities/donation.dart';
 
 class DonationModel extends Donation {
@@ -12,25 +14,37 @@ class DonationModel extends Donation {
     required super.createdAt,
   });
 
-  factory DonationModel.fromMap(Map<String, dynamic> map) {
+  factory DonationModel.fromMap(Map<String, dynamic> map, String id) {
+    // createdAt puede venir como Timestamp o como String
+    final createdAtField = map['createdAt'];
+    DateTime createdAt;
+
+    if (createdAtField is Timestamp) {
+      createdAt = createdAtField.toDate();
+    } else if (createdAtField is String) {
+      createdAt = DateTime.parse(createdAtField);
+    } else {
+      createdAt = DateTime.now();
+    }
+
     return DonationModel(
-      id: map['id'] as String,
-      description: map['description'] as String,
-      quantity: map['quantity'] as int,
-      unit: map['unit'] as String,
-      category: map['category'] as String,
-      location: map['location'] as String,
-      createdAt: DateTime.parse(map['createdAt'] as String),
+      id: id,
+      description: map['description'] as String? ?? '',
+      quantity: (map['quantity'] as num?)?.toInt() ?? 0,
+      unit: map['unit'] as String? ?? '',
+      category: map['category'] as String? ?? '',
+      location: map['location'] as String? ?? '',
+      createdAt: createdAt,
     );
   }
 
   Map<String, dynamic> toMap() => {
-    'id': id,
     'description': description,
     'quantity': quantity,
     'unit': unit,
     'category': category,
     'location': location,
-    'createdAt': createdAt.toIso8601String(),
+    // Firestore lo va a guardar como Timestamp
+    'createdAt': createdAt,
   };
 }
