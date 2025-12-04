@@ -120,8 +120,8 @@ La app valida el JSON, lo transforma en entidad de dominio y lo registra en Fire
 
 ## ▶️ Demo en Video
 
-Video demostrativo:  
-[Ver demo](https://drive.google.com/file/d/1iHaKPlN3XnoM4AbOB7QnFSm9bmF-SmN1/view?usp=sharing)
+Videos demostrativos (Android & iOs):  
+[Ver demos](https://drive.google.com/file/d/1iHaKPlN3XnoM4AbOB7QnFSm9bmF-SmN1/view?usp=sharing)
 
 ---
 
