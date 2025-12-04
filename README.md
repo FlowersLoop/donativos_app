@@ -152,6 +152,6 @@ Libre para revisión por docentes
 ## 📝 Comandos para Subir al GitHub
 ```bash
 git add README.md
-git commit -m "docs: update professional README for final project"
+git commit -m "docs: Actualizaciones"
 git push
 ```
