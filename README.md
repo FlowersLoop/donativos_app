@@ -3,7 +3,10 @@
 ### Ingeniería en Tecnologías de Cómputo y Telecomunicaciones
 ### Aplicaciones Móviles – Otoño 2025
 
-**Autor:** Fernando Flores López  
+**Autores:**  
+- **Fernando Flores López**  
+- **Santiago Tapia Reducindo**
+
 **Institución:** Universidad Iberoamericana
 
 ---
